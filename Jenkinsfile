@@ -20,7 +20,7 @@ node {
         sh 'ansible-playbook generate_configurations.yaml -e "ansible_python_interpreter=jenkins_build/bin/python"'
     }
     stage ('Unit Testing') {
-        sh 'ansible-playbook depoy_configurations.yaml -e "ansible_python_interpreter=jenkins_build/bin/python" --syntax-check'
+        sh 'ansible-playbook deploy_configurations.yaml -e "ansible_python_interpreter=jenkins_build/bin/python" --syntax-check'
     }
 
     stage ('Functional/Integration Testing') {
