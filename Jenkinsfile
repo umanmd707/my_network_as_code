@@ -3,11 +3,14 @@ node {
         deleteDir()
         checkout scm
     }
+    stage ('Validate Generate Configurations Playbook') {
+        sh 'ansible-playbook generate_configurations.yaml --syntax-check'
+    }
     stage ('Render Configurations') {
         sh 'ansible-playbook generate_configurations.yaml'
     }
     stage ('Unit Testing') {
-      // Do some kind of "linting" on our code to make sure we didn't bugger anything up too badly
+        sh 'ansible-playbook depoy_configurations.yaml --syntax-check'
     }
     stage ('Deploy Configurations to Dev') {
     sh 'python3 -m venv jenkins_build'
