@@ -1,0 +1,51 @@
+---
+  - name: Validate "Core" & "Internet" Reachability from Firewall
+    connection: local
+    hosts: acme-sea-asa1
+    gather_facts: no
+    vars:
+      creds:
+        host: "{{ ansible_host }}"
+        username: "{{ username }}"
+        password: "{{ username }}"
+        authorize: yes
+        auth_pass: "{{ enable_password }}"
+      test_ips:
+        - 8.8.8.8
+        - 10.255.255.2
+    tasks:
+      - asa_command:
+          provider: "{{ creds }}"
+          commands:
+            - ping 8.8.8.8
+        register: ping_output
+        failed_when:
+        with_items: "{{ test_ips }}"
+
+  - name: Validate "Edge" Reachability from Edge Router
+    connection: local
+    hosts: acme-sea-rtr1
+    gather_facts: no
+    tags: router
+    vars:
+      creds:
+        host: "{{ ansible_host }}"
+        username: "{{ username }}"
+        password: "{{ username }}"
+      test_success_ips:
+        - 203.0.113.2
+      test_fail_ips:
+        - 10.255.255.2
+    tasks:
+      - name: Test Success Pings
+        ios_ping:
+          provider: "{{ creds }}"
+          dest: "{{ item }}"
+        with_items: "{{ test_success_ips }}"
+      - name: Test Fail Pings
+        ios_ping:
+          provider: "{{ creds }}"
+          dest: "{{ item }}"
+          state: absent
+          count: 4
+        with_items: "{{ test_fail_ips }}"
