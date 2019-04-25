@@ -1,0 +1,64 @@
+---
+  - name: Backup Cisco ASA Configurations
+    connection: local
+    hosts: cisco-asa
+    gather_facts: no
+    vars:
+      creds:
+        host: "{{ ansible_host }}"
+        username: "{{ username }}"
+        password: "{{ username }}"
+        authorize: yes
+        auth_pass: "{{ enable_password }}"
+    tags: asa
+    tasks:
+      - asa_config:
+          provider: "{{ creds }}"
+          backup: yes
+
+  - name: Backup Cisco IOS-XE Router Configurations
+    connection: local
+    hosts: cisco-ios-xe-routers
+    gather_facts: yes
+    vars:
+      creds:
+        hostname: "{{ ansible_host }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        dev_os: "{{ device_type }}"
+    tags: ios-xe
+    tasks:
+      - napalm_get_facts:
+          provider: "{{ creds }}"
+          filter: "config"
+        register: config
+      - copy:
+          content: "{{ config['ansible_facts']['napalm_config']['running'] }}"
+          dest: "backup/{{ inventory_hostname }}_config.{{ ansible_date_time.date }}@{{ ansible_date_time.time }}"
+  - name: Backup Cisco NXOS Configurations
+    connection: local
+    hosts: cisco-nxos
+    gather_facts: yes
+    vars:
+      napalm_creds:
+        hostname: "{{ ansible_host }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        dev_os: "{{ device_type }}"
+      nxos_rollback_creds:
+        host: "{{ ansible_host }}"
+        username: "{{ username }}"
+        password: "{{ password }}"
+        transport: "cli"
+    tags: nxos
+    tasks:
+      - nxos_rollback:
+          provider: "{{ nxos_rollback_creds }}"
+          checkpoint_file: "my_net_as_code_checkpoint"
+      - napalm_get_facts:
+          provider: "{{ napalm_creds }}"
+          filter: "config"
+        register: config
+      - copy:
+          content: "{{ config['ansible_facts']['napalm_config']['running'] }}"
+          dest: "backup/{{ inventory_hostname }}_config.{{ ansible_date_time.date }}@{{ ansible_date_time.time }}"
