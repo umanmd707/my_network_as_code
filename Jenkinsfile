@@ -21,10 +21,11 @@ node {
     }
     stage ('Unit Testing') {
         sh 'ansible-playbook deploy_configurations.yaml -e "ansible_python_interpreter=jenkins_build/bin/python" --syntax-check'
+        sh 'ansible-playbook validate_configurations-asa-rtr.yaml -e "ansible_python_interpreter=jenkins_build/bin/python" --syntax-check'
     }
 
     stage ('Functional/Integration Testing') {
-      // Ping stuff and make sure we didn't blow up dev!
+        sh 'ansible-playbook validate_configurations-asa-rtr.yaml -e "ansible_python_interpreter=jenkins_build/bin/python"'
     }
     stage ('Promote Configurations to Production') {
       // Ping stuff and make sure we didn't blow up dev!
