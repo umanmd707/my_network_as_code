@@ -1,10 +1,10 @@
 node {
-  stages {
+ checkout scm
     stage ('Checkout Repository') {
         deleteDir()
-        steps {
-        checkout scm
-        }
+ 
+       
+
     }
-    }
+ 
 }
